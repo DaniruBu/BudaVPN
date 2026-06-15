@@ -1,0 +1,21 @@
+---
+- name: Find SSH keys
+  set_fact:
+    ssh_keys: "{{ query('fileglob', ssh_keys_dir + '/*.pub') }}"
+
+- name: Check SSH keys
+  assert:
+    that:
+      - ssh_keys | length > 0
+    fail_msg: "No SSH keys found in {{ ssh_keys_dir }}"
+
+- name: Synchronize SSH keys
+  authorized_key:
+    user: "{{ ssh_user }}"
+    key: |
+      {% for key in ssh_keys %}
+      {{ lookup('file', key) | trim }}
+      {% endfor %}
+    state: present
+    manage_dir: true
+    exclusive: true

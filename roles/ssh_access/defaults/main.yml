@@ -1,0 +1,3 @@
+---
+ssh_user: admin
+ssh_keys_dir: "{{ lookup('env', 'HOME') }}/buda_access"

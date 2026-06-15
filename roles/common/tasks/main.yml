@@ -1,0 +1,24 @@
+---
+- name: Install sudo 
+  apt:
+    name: sudo
+    state: present
+
+- name: Create admin user
+  user:
+    name: "{{ admin_user }}"
+    groups: sudo
+    shell: /bin/bash
+    append: true
+    create_home: true
+    password_lock: true
+    state: present
+
+- name: Allow admin to use sudo without password
+  copy:
+    dest: "/etc/sudoers.d/{{ admin_user }}"
+    content: "{{ admin_user }} ALL=(ALL) NOPASSWD:ALL\n"
+    owner: root
+    group: root
+    mode: '0440'
+    validate: 'visudo -cf %s'
