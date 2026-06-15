@@ -1,0 +1,9 @@
+---
+- name: Bootstrap servers
+  hosts: all
+  remote_user: root
+  become: false
+
+  roles:
+    - common
+    - ssh_access
