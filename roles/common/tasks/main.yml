@@ -1,24 +1,20 @@
 ---
-- name: Install sudo 
-  apt:
-    name: sudo
-    state: present
+- name: Install base packages
+  import_tasks: packages.yml
+
+- name: Configure system
+  import_tasks: system.yml
 
 - name: Create admin user
-  user:
-    name: "{{ admin_user }}"
-    groups: sudo
-    shell: /bin/bash
-    append: true
-    create_home: true
-    password_lock: true
-    state: present
+  import_tasks: user.yml
 
-- name: Allow admin to use sudo without password
-  copy:
-    dest: "/etc/sudoers.d/{{ admin_user }}"
-    content: "{{ admin_user }} ALL=(ALL) NOPASSWD:ALL\n"
-    owner: root
-    group: root
-    mode: '0440'
-    validate: 'visudo -cf %s'
+- name: Install Docker
+  import_tasks: docker.yml
+
+- name: Configure firewall
+  import_tasks: firewall.yml
+  when: common_firewall_enabled | bool
+
+- name: Configure network tuning
+  import_tasks: tuning.yml
+  when: common_tuning_enabled | bool

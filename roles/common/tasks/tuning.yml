@@ -1,0 +1,26 @@
+---
+- name: Load kernel modules
+  modprobe:
+    name: "{{ item }}"
+    state: present
+  loop: "{{ common_modules_load }}"
+  failed_when: false
+
+- name: Persist kernel modules
+  lineinfile:
+    path: "/etc/modules-load.d/budavpn.conf"
+    line: "{{ item }}"
+    create: true
+    owner: root
+    group: root
+    mode: "0644"
+  loop: "{{ common_modules_load }}"
+
+- name: Apply sysctl tuning
+  sysctl:
+    name: "{{ item.key }}"
+    value: "{{ item.value }}"
+    state: present
+    sysctl_set: true
+    reload: true
+  loop: "{{ common_sysctl_params | dict2items }}"

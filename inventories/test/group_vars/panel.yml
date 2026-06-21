@@ -1,0 +1,8 @@
+---
+common_firewall_allow_tcp_ports:
+  - 22
+  - 443
+  - 8443
+
+common_firewall_limit_tcp_ports:
+  - 22

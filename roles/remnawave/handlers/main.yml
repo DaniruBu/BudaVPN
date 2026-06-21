@@ -1,0 +1,14 @@
+---
+- name: Restart Remnawave panel
+  ansible.builtin.command: docker compose up -d
+  args:
+    chdir: "{{ remnawave_dir }}"
+  become: true
+  become_user: "{{ remnawave_user }}"
+
+- name: Restart Remnawave nginx proxy
+  ansible.builtin.command: docker compose up -d
+  args:
+    chdir: "{{ remnawave_nginx_dir }}"
+  become: true
+  become_user: "{{ remnawave_user }}"

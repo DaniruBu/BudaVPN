@@ -1,0 +1,19 @@
+--- 
+- name: Create admin user
+  user: 
+    name: "{{ admin_user }}"
+    groups: "{{ admin_group }}"
+    shell: /bin/bash
+    append: true
+    create_home: true
+    password_lock: true
+    state: present
+
+- name: Allow admin user to use sudo without password
+  copy: 
+    dest: "/etc/sudoers.d/{{ admin_user }}"
+    content: "{{ admin_user }} ALL=(ALL) NOPASSWD:ALL\n"
+    owner: root
+    group: root
+    mode: "0440"
+    validate: "visudo -cf %s"

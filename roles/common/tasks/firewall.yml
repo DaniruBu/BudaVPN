@@ -1,0 +1,42 @@
+---
+- name: Install UFW
+  apt:
+    name: ufw
+    state: present
+    update_cache: true
+
+- name: Set UFW default incoming policy
+  ufw:
+    direction: incoming
+    policy: "{{ common_firewall_default_incoming_policy }}"
+
+- name: Set UFW default outgoing policy
+  ufw:
+    direction: outgoing
+    policy: "{{ common_firewall_default_outgoing_policy }}"
+
+- name: Allow TCP ports
+  ufw:
+    rule: allow
+    port: "{{ item }}"
+    proto: tcp
+  loop: "{{ common_firewall_allow_tcp_ports }}"
+
+- name: Allow TCP ports from selected IPs
+  ufw:
+    rule: allow
+    port: "{{ item.port }}"
+    proto: tcp
+    from_ip: "{{ item.from_ip }}"
+  loop: "{{ common_firewall_allow_tcp_from | default([]) }}"
+
+- name: Rate limit selected TCP ports
+  ufw:
+    rule: limit
+    port: "{{ item }}"
+    proto: tcp
+  loop: "{{ common_firewall_limit_tcp_ports }}"
+
+- name: Enable UFW
+  ufw:
+    state: enabled

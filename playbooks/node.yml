@@ -1,0 +1,8 @@
+---
+- name: Install Remnawave Nodes
+  hosts: nodes
+  become: true
+  gather_facts: true
+
+  roles:
+    - remnawave_node

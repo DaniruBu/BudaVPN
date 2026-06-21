@@ -1,0 +1,8 @@
+---
+remnawave_node_dir: /opt/remnanode
+remnawave_node_user: "{{ ansible_user }}"
+remnawave_node_group: "{{ ansible_user }}"
+
+remnawave_node_port: 2222
+remnawave_node_secret_key: ""
+remnawave_node_image: remnawave/node:latest

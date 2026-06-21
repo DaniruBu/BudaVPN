@@ -1,0 +1,7 @@
+---
+common_firewall_allow_tcp_ports:
+  - 22
+  # сюда потом добавим порты Remnawave Node
+
+common_firewall_limit_tcp_ports:
+  - 22

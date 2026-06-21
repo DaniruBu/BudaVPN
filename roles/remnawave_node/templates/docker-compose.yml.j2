@@ -1,0 +1,10 @@
+services:
+  remnanode:
+    container_name: remnanode
+    hostname: remnanode
+    image: {{ remnawave_node_image }}
+    restart: always
+    network_mode: host
+    environment:
+      - NODE_PORT={{ remnawave_node_port }}
+      - SECRET_KEY={{ remnawave_node_secret_key }}

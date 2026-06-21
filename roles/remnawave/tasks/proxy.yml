@@ -1,0 +1,94 @@
+---
+- name: Install nginx proxy certificate dependencies
+  apt:
+    name:
+      - cron
+      - socat
+    state: present
+    update_cache: true
+
+- name: Create Remnawave nginx directory
+  file:
+    path: "{{ remnawave_nginx_dir }}"
+    state: directory
+    owner: "{{ remnawave_user }}"
+    group: "{{ remnawave_group }}"
+    mode: "0755"
+
+- name: Check acme.sh installation
+  stat:
+    path: "{{ remnawave_acme_home }}/acme.sh"
+  register: remnawave_acme_stat
+
+- name: Install acme.sh
+  shell: |
+    curl https://get.acme.sh | sh -s email={{ remnawave_acme_email }}
+  args:
+    executable: /bin/bash
+  become: true
+  become_user: "{{ remnawave_user }}"
+  when: not remnawave_acme_stat.stat.exists
+
+- name: Check Remnawave nginx certificate
+  stat:
+    path: "{{ remnawave_nginx_dir }}/fullchain.pem"
+  register: remnawave_nginx_cert_stat
+
+- name: Issue Remnawave nginx certificate
+  shell: |
+    {{ remnawave_acme_home }}/acme.sh \
+      --issue \
+      --server {{ remnawave_acme_server }} \
+      --standalone \
+      -d "{{ remnawave_panel_domain }}" \
+      --key-file "{{ remnawave_nginx_dir }}/privkey.key" \
+      --fullchain-file "{{ remnawave_nginx_dir }}/fullchain.pem" \
+      --alpn \
+      --tlsport 8443 \
+      --reloadcmd "docker exec remnawave-nginx nginx -s reload || true"
+  args:
+    executable: /bin/bash
+  become: true
+  become_user: "{{ remnawave_user }}"
+  when: not remnawave_nginx_cert_stat.stat.exists
+
+- name: Install Remnawave nginx certificate renewal hook
+  shell: |
+    {{ remnawave_acme_home }}/acme.sh \
+      --install-cert \
+      --server {{ remnawave_acme_server }} \
+      -d "{{ remnawave_panel_domain }}" \
+      --key-file "{{ remnawave_nginx_dir }}/privkey.key" \
+      --fullchain-file "{{ remnawave_nginx_dir }}/fullchain.pem" \
+      --reloadcmd "docker exec remnawave-nginx nginx -s reload || true"
+  args:
+    executable: /bin/bash
+  become: true
+  become_user: "{{ remnawave_user }}"
+  when: not remnawave_nginx_cert_stat.stat.exists
+
+- name: Render Remnawave nginx config
+  template:
+    src: nginx.conf.j2
+    dest: "{{ remnawave_nginx_dir }}/nginx.conf"
+    owner: "{{ remnawave_user }}"
+    group: "{{ remnawave_group }}"
+    mode: "0644"
+  notify: Restart Remnawave nginx proxy
+
+- name: Render Remnawave nginx docker-compose.yml
+  template:
+    src: nginx-compose.yml.j2
+    dest: "{{ remnawave_nginx_dir }}/docker-compose.yml"
+    owner: "{{ remnawave_user }}"
+    group: "{{ remnawave_group }}"
+    mode: "0644"
+  notify: Restart Remnawave nginx proxy
+
+- name: Start Remnawave nginx proxy
+  command: docker compose up -d
+  args:
+    chdir: "{{ remnawave_nginx_dir }}"
+  become: true
+  become_user: "{{ remnawave_user }}"
+  changed_when: false

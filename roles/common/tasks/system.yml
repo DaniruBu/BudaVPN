@@ -1,0 +1,12 @@
+- name: Set server hostname
+  hostname:
+    name: "{{ inventory_hostname }}"
+
+- name: Configure /etc/hosts from inventory
+  blockinfile:
+    path: /etc/hosts
+    marker: "# {mark} VPN HOSTS"
+    block: |
+      {% for host in groups['remnawave'] %}
+      {{ hostvars[host].ansible_host }} {{ host }}{{ ' ' + hostvars[host].host_aliases if hostvars[host].host_aliases is defined else '' }}
+      {% endfor %}
