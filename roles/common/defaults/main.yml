@@ -1,2 +1,14 @@
 ---
 admin_user: admin
+admin_group: sudo
+
+common_pages: 
+  - sudo 
+  - curl 
+  - ca-certificates
+  - openssl 
+  - python3
+  - tzdata
+
+docker_install_script_url: https://get.docker.com
+docker_install_script_path: /tmp/get-docker.sh
