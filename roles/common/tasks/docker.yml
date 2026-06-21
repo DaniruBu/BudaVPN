@@ -37,7 +37,7 @@
 
 - name: Add administrative user to docker group 
   user: 
-    name: "{{ admib_user }}"
+    name: "{{ admin_user }}"
     groups: docker
     append: true
 
