@@ -1,7 +1,7 @@
 --- 
 - name: Create admin user
   user: 
-    name: "{{ admib_user }}}"
+    name: "{{ admin_user }}"
     groups: "{{ admin_group }}"
     shell: /bin/bash
     append: true
@@ -11,10 +11,9 @@
 
 - name: Allow admin user to use sudo without password
   copy: 
-    dest: "/etc/sudoers.d/{{ admib_user }}"
-    content: "{{ admib_user }} All=(ALL) NOPASSWD:ALL\n"
+    dest: "/etc/sudoers.d/{{ admin_user }}"
+    content: "{{ admin_user }} ALL=(ALL) NOPASSWD:ALL\n"
     owner: root
     group: root
     mode: "0440"
     validate: "visudo -cf %s"
-

@@ -1,0 +1,31 @@
+---
+- name: Check Remnawave Node secret key
+  assert:
+    that:
+      - remnawave_node_secret_key | length > 0
+    fail_msg: "Set remnawave_node_secret_key for this node. Copy it from Remnawave Panel node docker-compose."
+
+- name: Create Remnawave Node directory
+  file:
+    path: "{{ remnawave_node_dir }}"
+    state: directory
+    owner: "{{ remnawave_node_user }}"
+    group: "{{ remnawave_node_group }}"
+    mode: "0755"
+
+- name: Render Remnawave Node docker-compose.yml
+  template:
+    src: docker-compose.yml.j2
+    dest: "{{ remnawave_node_dir }}/docker-compose.yml"
+    owner: "{{ remnawave_node_user }}"
+    group: "{{ remnawave_node_group }}"
+    mode: "0600"
+  notify: Restart Remnawave Node
+
+- name: Start Remnawave Node
+  command: docker compose up -d
+  args:
+    chdir: "{{ remnawave_node_dir }}"
+  become: true
+  become_user: "{{ remnawave_node_user }}"
+  changed_when: false

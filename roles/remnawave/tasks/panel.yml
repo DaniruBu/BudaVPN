@@ -1,0 +1,97 @@
+---
+- name: Create Remnawave directory
+  file:
+    path: "{{ remnawave_dir }}"
+    state: directory
+    owner: "{{ remnawave_user }}"
+    group: "{{ remnawave_group }}"
+    mode: "0755"
+
+- name: Download Remnawave docker-compose.yml
+  get_url:
+    url: "{{ remnawave_compose_url }}"
+    dest: "{{ remnawave_dir }}/docker-compose.yml"
+    owner: "{{ remnawave_user }}"
+    group: "{{ remnawave_group }}"
+    mode: "0644"
+
+- name: Check Remnawave .env
+  stat:
+    path: "{{ remnawave_dir }}/.env"
+  register: remnawave_env_stat
+
+- name: Download Remnawave .env sample
+  get_url:
+    url: "{{ remnawave_env_url }}"
+    dest: "{{ remnawave_dir }}/.env"
+    owner: "{{ remnawave_user }}"
+    group: "{{ remnawave_group }}"
+    mode: "0600"
+  when: not remnawave_env_stat.stat.exists
+
+- name: Generate Remnawave secrets
+  command: "openssl rand -hex {{ item.length }}"
+  register: remnawave_generated_secrets
+  changed_when: false
+  no_log: true
+  loop:
+    - name: JWT_AUTH_SECRET
+      length: 64
+    - name: JWT_API_TOKENS_SECRET
+      length: 64
+    - name: METRICS_PASS
+      length: 64
+    - name: WEBHOOK_SECRET_HEADER
+      length: 64
+    - name: POSTGRES_PASSWORD
+      length: 24
+  when: not remnawave_env_stat.stat.exists
+
+- name: Set generated Remnawave secrets
+  lineinfile:
+    path: "{{ remnawave_dir }}/.env"
+    regexp: "^{{ item.item.name }}="
+    line: "{{ item.item.name }}={{ item.stdout }}"
+    owner: "{{ remnawave_user }}"
+    group: "{{ remnawave_group }}"
+    mode: "0600"
+  loop: "{{ remnawave_generated_secrets.results }}"
+  no_log: true
+  when: not remnawave_env_stat.stat.exists
+
+- name: Set DATABASE_URL on first install
+  lineinfile:
+    path: "{{ remnawave_dir }}/.env"
+    regexp: "^DATABASE_URL="
+    line: 'DATABASE_URL="postgresql://postgres:{{ remnawave_postgres_password.stdout }}@remnawave-db:5432/postgres"'
+    owner: "{{ remnawave_user }}"
+    group: "{{ remnawave_group }}"
+    mode: "0600"
+  no_log: true
+  when: not remnawave_env_stat.stat.exists
+
+
+- name: Configure Remnawave panel domains
+  lineinfile:
+    path: "{{ remnawave_dir }}/.env"
+    regexp: "^{{ item.key }}="
+    line: "{{ item.key }}={{ item.value }}"
+    owner: "{{ remnawave_user }}"
+    group: "{{ remnawave_group }}"
+    mode: "0600"
+  loop:
+    - key: PANEL_DOMAIN
+      value: "{{ remnawave_panel_domain }}"
+    - key: FRONT_END_DOMAIN
+      value: "{{ remnawave_panel_domain }}"
+    - key: SUB_PUBLIC_DOMAIN
+      value: "{{ remnawave_sub_public_domain }}"
+  notify: Restart Remnawave panel
+
+- name: Start Remnawave Panel as admin user
+  command: docker compose up -d
+  args:
+    chdir: "{{ remnawave_dir }}"
+  become: true
+  become_user: "{{ remnawave_user }}"
+  changed_when: false

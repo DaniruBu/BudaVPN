@@ -1,0 +1,7 @@
+---
+- name: Install Remnawave panel
+  import_tasks: panel.yml
+
+- name: Install Remnawave nginx reverse proxy
+  import_tasks: proxy.yml
+  when: remnawave_proxy_enabled | bool

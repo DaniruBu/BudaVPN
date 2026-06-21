@@ -1,0 +1,18 @@
+---
+remnawave_dir: /opt/remnawave
+
+remnawave_user: "{{ ansible_user }}"
+remnawave_group: "{{ ansible_user }}"
+
+remnawave_panel_domain: тут кароче домен
+remnawave_sub_public_domain: "{{ remnawave_panel_domain }}/api/sub"
+
+remnawave_compose_url: https://raw.githubusercontent.com/remnawave/backend/refs/heads/main/docker-compose-prod.yml
+remnawave_env_url: https://raw.githubusercontent.com/remnawave/backend/refs/heads/main/.env.sample
+
+remnawave_proxy_enabled: true
+remnawave_nginx_dir: "{{ remnawave_dir }}/nginx"
+remnawave_nginx_image: nginx:1.28
+
+remnawave_acme_email: тут кароче почта
+remnawave_acme_home: "/home/{{ remnawave_user }}/.acme.sh"
