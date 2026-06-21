@@ -45,5 +45,4 @@
   command: docker compose version 
   changed_when: false
 
-
   
