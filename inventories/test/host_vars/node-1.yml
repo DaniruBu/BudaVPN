@@ -1,0 +1,6 @@
+# inventories/test/host_vars/node-1.yml
+
+---
+remnawave_node_port: 2222
+remnawave_node_secret_key: "PASTE_SECRET_KEY_FROM_PANEL_HERE" 
+# через Ansible Vault

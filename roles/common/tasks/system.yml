@@ -1,11 +1,12 @@
----
-- name: Set system hostname
-  hostname: 
-    nama: "{{ server_hostname }}"
+- name: Set server hostname
+  hostname:
+    name: "{{ inventory_hostname }}"
 
-- name: Map hostname in /etc/hosts
-  ansible.builtin.lineinfile:
+- name: Configure /etc/hosts from inventory
+  blockinfile:
     path: /etc/hosts
-    regexp: '^127\.0\.1\.1\s+'
-    line: "127.0.0.1 {{ server_hostname }}"
-    state: present
+    marker: "# {mark} VPN HOSTS"
+    block: |
+      {% for host in groups['remnawave'] %}
+      {{ hostvars[host].ansible_host }} {{ host }}{{ ' ' + hostvars[host].host_aliases if hostvars[host].host_aliases is defined else '' }}
+      {% endfor %}

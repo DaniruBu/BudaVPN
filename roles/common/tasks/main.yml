@@ -2,13 +2,19 @@
 - name: Install base packages
   import_tasks: packages.yml
 
-- name: Configure system 
+- name: Configure system
   import_tasks: system.yml
 
-- name: Configure user
+- name: Create admin user
   import_tasks: user.yml
 
 - name: Install Docker
   import_tasks: docker.yml
-  
 
+- name: Configure firewall
+  import_tasks: firewall.yml
+  when: common_firewall_enabled | bool
+
+- name: Configure network tuning
+  import_tasks: tuning.yml
+  when: common_tuning_enabled | bool

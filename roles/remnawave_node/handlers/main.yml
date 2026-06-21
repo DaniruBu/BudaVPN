@@ -1,0 +1,7 @@
+---
+- name: Restart Remnawave Node
+  command: docker compose up -d
+  args:
+    chdir: "{{ remnawave_node_dir }}"
+  become: true
+  become_user: "{{ remnawave_node_user }}"
